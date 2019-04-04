@@ -5,7 +5,7 @@ ListEnemyWorkers -> ListEnemyWorkers
 ShowMap -> ShowMapResponse
 ShowHistory -> ShowHistoryResponse
 LastScore -> LastScoreResponse
-TestScore size: int, x: int, y: int, data: string -> TestScoreResponse
+TestScore size: int, x: int, y: int, data: List<string> -> TestScoreResponse
 Move id: int, x: int, y: int -> void
 Destroy id: int -> void
 Put id: int, color: string -> void

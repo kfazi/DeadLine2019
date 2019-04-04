@@ -14,7 +14,7 @@
             var fileLines = File.ReadAllLines(@"Commands.txt");
 
             var regex = new Regex(
-                @"(?<method>\w+)(,?\s*?((?<parameter>\w+):\s*?(?<parameter_type>\w+)))*\s*?->\s*?(?<result_type>\w+)", RegexOptions.ExplicitCapture);
+                @"(?<method>\w+)(,?\s*?((?<parameter>\w+):\s*?(?<parameter_type>[\w<>]+)))*\s*?->\s*?(?<result_type>[\w<>]+)", RegexOptions.ExplicitCapture);
 
             foreach (var fileLine in fileLines)
             {
