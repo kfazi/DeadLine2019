@@ -128,6 +128,7 @@
     <Compile Include="Infrastructure\ForcedWaitingException.cs" />
     <Compile Include="Infrastructure\JsonExtensions.cs" />
     <Compile Include="Infrastructure\MainView.xaml.cs" />
+    <Compile Include="Infrastructure\SolutionDirectory.cs" />
     <Compile Include="Logic.cs" />
     <Compile Include="LogicState.cs" />
     <Compile Include="Infrastructure\Log.cs" />
@@ -154,7 +155,13 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="App.config" />
-    <None Include="connection.json">
+    <None Include="connection0.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="connection2.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="connection1.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

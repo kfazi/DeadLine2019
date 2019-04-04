@@ -12,11 +12,16 @@
 
         public string Password { get; set; }
 
-        public static ConnectionData Load(string path)
+        public void Load(string path)
         {
             var content = File.ReadAllText(path);
 
-            return content.FromJson<ConnectionData>();
+            var connectionData = content.FromJson<ConnectionData>();
+
+            Host = connectionData.Host;
+            Port = connectionData.Port;
+            UserName = connectionData.UserName;
+            Password = connectionData.Password;
         }
     }
 }

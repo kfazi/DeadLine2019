@@ -77,7 +77,7 @@ namespace DeadLine2019.Infrastructure
 
         private Point? _draggingStart;
 
-        public MainViewModel(MainLoop mainLoop, BitmapGraphProvider bitmapGraphProvider, Log log, DrawingWindowState drawingWindowState)
+        public MainViewModel(MainLoop mainLoop, BitmapGraphProvider bitmapGraphProvider, Log log, DrawingWindowState drawingWindowState, ConnectionData connectionData)
         {
             _mainLoop = mainLoop;
             _bitmapGraphProvider = bitmapGraphProvider;
@@ -85,6 +85,7 @@ namespace DeadLine2019.Infrastructure
             Log = log;
             Log.PropertyChanged += OnTextChanged;
             _bitmapGraphProvider.PropertyChanged += OnBitmapGraphChanged;
+            DisplayName = $"{connectionData.Host}:{connectionData.Port}";
         }
 
         protected override void OnInitialize()

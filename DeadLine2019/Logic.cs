@@ -36,16 +36,16 @@
             Commands = commands;
             DrawingWindowState = drawingWindowState;
 
-            _groundSprite = BitmapLoader.Load(@"..\..\..\Images\Shooter\Tiles\tile_05.png", 16, 16);
-            _waterSprite = BitmapLoader.Load(@"..\..\..\Images\Shooter\Tiles\tile_19.png", 16, 16);
-            _treeSprite = BitmapLoader.Load(@"..\..\..\Images\Shooter\Tiles\tile_183.png", 16, 16);
+            _groundSprite = BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Tiles\tile_05.png"), 16, 16);
+            _waterSprite = BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Tiles\tile_19.png"), 16, 16);
+            _treeSprite = BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Tiles\tile_183.png"), 16, 16);
             _playerSprites = new[]
             {
-                BitmapLoader.Load(@"..\..\..\Images\Shooter\Hitman 1\hitman1_silencer.png", 16, 16),
-                BitmapLoader.Load(@"..\..\..\Images\Shooter\Hitman 1\hitman1_silencer.png", 16, 16),
-                BitmapLoader.Load(@"..\..\..\Images\Shooter\Hitman 1\hitman1_silencer.png", 16, 16),
-                BitmapLoader.Load(@"..\..\..\Images\Shooter\Hitman 1\hitman1_silencer.png", 16, 16),
-                BitmapLoader.Load(@"..\..\..\Images\Shooter\Hitman 1\hitman1_silencer.png", 16, 16),
+                BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Hitman 1\hitman1_silencer.png"), 16, 16),
+                BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Hitman 1\hitman1_silencer.png"), 16, 16),
+                BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Hitman 1\hitman1_silencer.png"), 16, 16),
+                BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Hitman 1\hitman1_silencer.png"), 16, 16),
+                BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Hitman 1\hitman1_silencer.png"), 16, 16),
             };
 
             _playerSprites[0].Colorize(Color.FromRgb(255, 0, 0));

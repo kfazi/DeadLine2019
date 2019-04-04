@@ -1,6 +1,8 @@
 ﻿namespace DeadLine2019.Infrastructure
 {
     using System;
+    using System.Diagnostics;
+    using System.Linq;
     using System.Threading;
     using System.Windows;
 
@@ -27,7 +29,7 @@
                 .AsSelf()
                 .AsImplementedInterfaces()
                 .SingleInstance();
-            builder.RegisterInstance(ConnectionData.Load(@"connection.json"));
+            builder.RegisterInstance(new ConnectionData());
             builder.RegisterInstance(AppSettings.Create());
         }
 
@@ -40,6 +42,12 @@
         protected override void OnStartup(object sender, StartupEventArgs e)
         {
             Application.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            var connectionData = Container.Resolve<ConnectionData>();
+            var args = e.Args;
+
+            SolutionDirectory.Path = args.Length > 0 ? args.First() : @"..\..\..\";
+            connectionData.Load(args.Length > 1 ? args.Skip(1).First() : @"connection0.json");
 
             DisplayRootViewFor<MainViewModel>();
 
