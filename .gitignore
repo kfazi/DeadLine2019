@@ -1,0 +1,13 @@
+.vs/
+
+*.user
+
+[Bb]in/
+[Oo]bj/
+
+*.orig
+
+packages/
+
+Thumbs.db
+Desktop.ini

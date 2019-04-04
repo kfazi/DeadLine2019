@@ -1,0 +1,17 @@
+﻿<Application x:Class="DeadLine2019.Infrastructure.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:deadLine2019="clr-namespace:DeadLine2019"
+             xmlns:infrastructure="clr-namespace:DeadLine2019.Infrastructure">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <infrastructure:AppBootstrapper x:Key="bootstrapper" />
+                    <infrastructure:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+                    <infrastructure:BoolToColumnWidthConverter x:Key="BoolToColumnWidthConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

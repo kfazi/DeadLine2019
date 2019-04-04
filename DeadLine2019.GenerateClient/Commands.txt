@@ -1,0 +1,12 @@
+﻿DescribeWorld -> DescribeWorldResponse
+TimeToEnd -> TimeToEndResponse
+ListMyWorkers -> ListMyWorkersResponse
+ListEnemyWorkers -> ListEnemyWorkers
+ShowMap -> ShowMapResponse
+ShowHistory -> ShowHistoryResponse
+LastScore -> LastScoreResponse
+TestScore size: int, x: int, y: int, data: string -> TestScoreResponse
+Move id: int, x: int, y: int -> void
+Destroy id: int -> void
+Put id: int, color: string -> void
+Score x: int, y: int -> void

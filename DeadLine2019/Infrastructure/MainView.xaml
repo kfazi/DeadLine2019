@@ -1,0 +1,44 @@
+﻿<Window x:Class="DeadLine2019.Infrastructure.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:cal="http://www.caliburnproject.org">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="3*" />
+        </Grid.RowDefinitions>
+
+        <TextBox x:Name="LogTextBox"
+                 FontFamily="Courier New"
+                 FontSize="12"
+                 IsReadOnly="True"
+                 VerticalScrollBarVisibility="Visible"
+                 Text="{Binding Path=Log.Text}" />
+        
+        <TextBox Grid.Row="1"
+                 x:Name="CommandInput"
+                 Height="20"
+                 cal:Message.Attach="[Event PreviewKeyDown] = [Action CommandInputConfirmed($executionContext)]" />
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{Binding Path=BitmapVisibility, Converter={StaticResource BoolToColumnWidthConverter}}" />
+                <ColumnDefinition Width="{Binding Path=GraphVisibility, Converter={StaticResource BoolToColumnWidthConverter}}" />
+            </Grid.ColumnDefinitions>
+            <Image x:Name="Bitmap"
+                   Grid.Column="0"
+                   Visibility="{Binding Path=BitmapVisibility, Converter={StaticResource BoolToVisibilityConverter}}"
+                   SnapsToDevicePixels="True"
+                   Stretch="None"
+                   cal:Message.Attach="[Event MouseDown] = [Action MouseDownCommandAsync($executionContext)];
+                                       [Event MouseUp] = [Action MouseUpCommandAsync($executionContext)];
+                                       [Event MouseMove] = [Action MouseMoveCommandAsync($executionContext)];
+                                       [Event MouseWheel] = [Action MouseWheelCommandAsync($executionContext)];" />
+            <DockPanel x:Name="GraphPanel"
+                       Visibility="{Binding Path=GraphVisibility, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Grid.Column="1">
+            </DockPanel>
+        </Grid>
+    </Grid>
+</Window>
