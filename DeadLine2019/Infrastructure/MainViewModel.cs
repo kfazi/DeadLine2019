@@ -12,54 +12,6 @@ namespace DeadLine2019.Infrastructure
     using Caliburn.Micro;
 
     using Microsoft.Msagl.Drawing;
-    using Microsoft.Msagl.WpfGraphControl;
-
-    public interface IGraphProvider
-    {
-        Graph Graph { get; set; }
-
-        void ClearGraph();
-
-        void UpdateLayout();
-    }
-
-    public interface IBitmapProvider
-    {
-        WriteableBitmap Bitmap { get; set; }
-    }
-
-    public class BitmapGraphProvider : PropertyChangedBase, IBitmapProvider, IGraphProvider
-    {
-        private WriteableBitmap _bitmap = BitmapFactory.New(512, 512);
-
-        public WriteableBitmap Bitmap
-        {
-            get => _bitmap;
-            set
-            {
-                _bitmap = value;
-                NotifyOfPropertyChange(nameof(Bitmap));
-            }
-        }
-
-        public Graph Graph
-        {
-            get => GraphViewer.Graph;
-            set => GraphViewer.Graph = value;
-        }
-
-        public void ClearGraph()
-        {
-            GraphViewer.Graph = new Graph();
-        }
-
-        public void UpdateLayout()
-        {
-            GraphViewer.ProcessGraph();
-        }
-
-        public GraphViewer GraphViewer { get; set; }
-    }
 
     public class MainViewModel : Screen
     {
@@ -101,9 +53,9 @@ namespace DeadLine2019.Infrastructure
 
         public Graph Graph => _bitmapGraphProvider.Graph;
 
-        public bool BitmapVisibility => true;
+        public bool IsBitmapVisible => _bitmapGraphProvider.IsBitmapVisible;
 
-        public bool GraphVisibility => true;
+        public bool IsGraphVisible => _bitmapGraphProvider.IsGraphVisible;
 
         public async Task MouseMoveCommandAsync(ActionExecutionContext context)
         {
@@ -245,7 +197,16 @@ namespace DeadLine2019.Infrastructure
             var view = (FrameworkElement)GetView();
 
             var logTextBox = (TextBox)view?.FindName("LogTextBox");
-            logTextBox?.ScrollToEnd();
+            if (logTextBox == null)
+            {
+                return;
+            }
+
+            var scrollToEnd = logTextBox.CaretIndex == logTextBox.Text.Length;
+            if (scrollToEnd)
+            {
+                logTextBox.ScrollToEnd();
+            }
         }
 
         private void OnBitmapGraphChanged(object sender, PropertyChangedEventArgs e)

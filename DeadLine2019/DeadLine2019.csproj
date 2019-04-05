@@ -13,6 +13,8 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,12 +37,37 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=4.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.5.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper, Version=6.0.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.0.2\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="BoostVoronoi_4x5x0">
+      <HintPath>..\Libs\BoostVoronoi_4x5x0.dll</HintPath>
     </Reference>
     <Reference Include="Caliburn.Micro, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.Core.3.0.3\lib\net45\Caliburn.Micro.dll</HintPath>
@@ -53,6 +80,9 @@
     </Reference>
     <Reference Include="Caliburn.Micro.Platform.Core, Version=3.0.3.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.3\lib\net45\Caliburn.Micro.Platform.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper, Version=12.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.12.1.2\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="MathNet.Numerics, Version=3.19.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.3.19.0\lib\net40\MathNet.Numerics.dll</HintPath>
@@ -72,6 +102,15 @@
     <Reference Include="Priority Queue, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OptimizedPriorityQueue.4.2.0\lib\net45\Priority Queue.dll</HintPath>
     </Reference>
+    <Reference Include="SevenZip, Version=19.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SevenZip.19.0.0\lib\net20\SevenZip.dll</HintPath>
+    </Reference>
+    <Reference Include="SevenZipSharp, Version=1.1.136.0, Culture=neutral, PublicKeyToken=c8ff6ba0184838bb, processorArchitecture=MSIL">
+      <HintPath>..\packages\Squid-Box.SevenZipSharp.1.1.136\lib\net45\SevenZipSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpCompress, Version=0.23.0.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.23.0\lib\net45\SharpCompress.dll</HintPath>
+    </Reference>
     <Reference Include="Stateless, Version=3.0.0.0, Culture=neutral, PublicKeyToken=93038f0927583c9a, processorArchitecture=MSIL">
       <HintPath>..\packages\Stateless.3.1.0\lib\net45\Stateless.dll</HintPath>
     </Reference>
@@ -80,6 +119,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Caliburn.Micro.3.0.3\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -103,15 +145,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\AntOptimization.cs" />
+    <Compile Include="Algorithms\Delaunay.cs" />
+    <Compile Include="Algorithms\DouglasPeucker.cs" />
     <Compile Include="Algorithms\IMap2D.cs" />
     <Compile Include="Algorithms\IMap3D.cs" />
     <Compile Include="Algorithms\IMap4D.cs" />
+    <Compile Include="Algorithms\ComponentLabeling.cs" />
     <Compile Include="Algorithms\Map2D.cs" />
     <Compile Include="Algorithms\Map3D.cs" />
     <Compile Include="Algorithms\Map4D.cs" />
+    <Compile Include="Algorithms\Point2D.cs" />
     <Compile Include="Algorithms\SparseMap2D.cs" />
     <Compile Include="Algorithms\SparseMap3D.cs" />
     <Compile Include="Algorithms\SparseMap4D.cs" />
+    <Compile Include="Algorithms\TerrainAnalysis.cs" />
+    <Compile Include="Algorithms\Voronoi.cs" />
     <Compile Include="Infrastructure\App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -119,6 +167,7 @@
     <Compile Include="Infrastructure\AppSettings.cs" />
     <Compile Include="Algorithms\AStar.cs" />
     <Compile Include="Infrastructure\BitmapExtensions.cs" />
+    <Compile Include="Infrastructure\BitmapGraphProvider.cs" />
     <Compile Include="Infrastructure\BitmapLoader.cs" />
     <Compile Include="Infrastructure\BoolToColumnWidthConverter.cs" />
     <Compile Include="Infrastructure\BoolToVisibilityConverter.cs" />
@@ -129,6 +178,8 @@
     <Compile Include="Infrastructure\FailedOperationException.cs" />
     <Compile Include="Algorithms\FloodFill.cs" />
     <Compile Include="Infrastructure\ForcedWaitingException.cs" />
+    <Compile Include="Infrastructure\IBitmapProvider.cs" />
+    <Compile Include="Infrastructure\IGraphProvider.cs" />
     <Compile Include="Infrastructure\JsonExtensions.cs" />
     <Compile Include="Infrastructure\MainView.xaml.cs" />
     <Compile Include="Infrastructure\SolutionDirectory.cs" />
@@ -188,9 +239,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ImageTracerNet\ImageTracerNet.csproj">
-      <Project>{84ee293e-b938-4512-8a39-86ffc00ed267}</Project>
-      <Name>ImageTracerNet</Name>
+    <ProjectReference Include="..\SharpBoostVoronoi\SharpBoostVoronoi.csproj">
+      <Project>{b56bcf21-beb1-442e-ac12-4c1bf376f833}</Project>
+      <Name>SharpBoostVoronoi</Name>
     </ProjectReference>
     <ProjectReference Include="..\WpfGraphControl\WpfGraphControl.csproj">
       <Project>{fce1d24e-cc6b-47bc-9ce4-427e5d56b71e}</Project>

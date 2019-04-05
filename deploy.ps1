@@ -26,7 +26,7 @@ If ([IO.File]::Exists("$PSScriptRoot\deploy\server2.pid")) {
     Stop-Process -Id $processId
 }
 
-msbuild $PSScriptRoot\DeadLine2019\DeadLine2019.csproj /p:OutputPath=$PSScriptRoot\deploy /p:Configuration=Release /p:Platform="Any CPU" /p:AllowUnsafeBlocks=true
+msbuild $PSScriptRoot\DeadLine2019\DeadLine2019.csproj /p:OutputPath=$PSScriptRoot\deploy /p:Configuration=Release /p:Platform="x64" /p:AllowUnsafeBlocks=true
 
 pushd "$PSScriptRoot\deploy\"
 If ($runAll) {
@@ -40,3 +40,10 @@ $processId = (Start-Process -PassThru -FilePath DeadLine2019.exe -ArgumentList "
 $processId = (Start-Process -PassThru -FilePath DeadLine2019.exe -ArgumentList "`"$PSScriptRoot`" connection2.json").Id
 [IO.File]::WriteAllText("$PSScriptRoot\deploy\server2.pid", $processId)
 popd
+
+$branch= &git rev-parse --abbrev-ref HEAD
+$time = (Get-Date).ToString('ddHHmmss')
+git add -A
+git commit -m 'Release'
+git tag $branch-$time
+git push --tags

@@ -104,9 +104,9 @@
                 });
 
                 var elapsedTime = _iterationStopwatch.ElapsedMilliseconds;
-                if (elapsedTime < 666)
+                if (elapsedTime < 100)
                 {
-                    Thread.Sleep((int)(666 - elapsedTime));
+                    Thread.Sleep((int)(100 - elapsedTime));
                 }
             }
         }

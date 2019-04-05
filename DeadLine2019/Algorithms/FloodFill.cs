@@ -48,5 +48,49 @@
 
             return result;
         }
+
+        public static void FillNodes(
+            TNode start,
+            Func<TNode, IEnumerable<TNode>> getNeighbors,
+            Func<TNode, bool> getAccessibility,
+            Action<TNode> fillAction)
+        {
+            FillNodes(start, getNeighbors, getAccessibility, fillAction, EqualityComparer<TNode>.Default);
+        }
+
+        public static void FillNodes(
+            TNode start,
+            Func<TNode, IEnumerable<TNode>> getNeighbors,
+            Func<TNode, bool> getAccessibility,
+            Action<TNode> fillAction,
+            IEqualityComparer<TNode> equalityComparer)
+        {
+            if (!getAccessibility(start))
+            {
+                return;
+            }
+
+            var visitedNodes = new HashSet<TNode>(equalityComparer);
+
+            var nodesQueue = new Queue<TNode>();
+            nodesQueue.Enqueue(start);
+
+            while (nodesQueue.Any())
+            {
+                var node = nodesQueue.Dequeue();
+                visitedNodes.Add(node);
+                fillAction(node);
+
+                foreach (var neighbor in getNeighbors(node))
+                {
+                    if (visitedNodes.Contains(neighbor) || !getAccessibility(neighbor))
+                    {
+                        continue;
+                    }
+
+                    nodesQueue.Enqueue(neighbor);
+                }
+            }
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace DeadLine2019.Infrastructure
 {
     using System;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Windows;
@@ -9,6 +8,8 @@
     using Autofac;
 
     using Caliburn.Micro.Autofac;
+
+    using SevenZip;
 
     public class AppBootstrapper : AutofacBootstrapper<MainViewModel>
     {
@@ -46,8 +47,10 @@
             var connectionData = Container.Resolve<ConnectionData>();
             var args = e.Args;
 
-            SolutionDirectory.Path = args.Length > 0 ? args.First() : @"..\..\..\";
+            SolutionDirectory.Path = args.Length > 0 ? args.First() : @"..\..\..\..\";
             connectionData.Load(args.Length > 1 ? args.Skip(1).First() : @"connection0.json");
+
+            SevenZipBase.SetLibraryPath(SolutionDirectory.Get("Libs", "7z.dll"));
 
             DisplayRootViewFor<MainViewModel>();
 
