@@ -103,6 +103,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\AntOptimization.cs" />
+    <Compile Include="Algorithms\IMap2D.cs" />
+    <Compile Include="Algorithms\IMap3D.cs" />
+    <Compile Include="Algorithms\IMap4D.cs" />
     <Compile Include="Algorithms\Map2D.cs" />
     <Compile Include="Algorithms\Map3D.cs" />
     <Compile Include="Algorithms\Map4D.cs" />
@@ -134,6 +137,7 @@
     <Compile Include="Infrastructure\Log.cs" />
     <Compile Include="Infrastructure\MainLoop.cs" />
     <Compile Include="Infrastructure\MainViewModel.cs" />
+    <Compile Include="MapRenderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -184,6 +188,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ImageTracerNet\ImageTracerNet.csproj">
+      <Project>{84ee293e-b938-4512-8a39-86ffc00ed267}</Project>
+      <Name>ImageTracerNet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WpfGraphControl\WpfGraphControl.csproj">
       <Project>{fce1d24e-cc6b-47bc-9ce4-427e5d56b71e}</Project>
       <Name>WpfGraphControl</Name>

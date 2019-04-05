@@ -117,7 +117,9 @@ namespace DeadLine2019.Infrastructure
                 return;
             }
 
-            var distance = mouseEventArgs.GetPosition(context.Source) - _draggingStart;
+            var currentPosition = mouseEventArgs.GetPosition(context.Source);
+            var distance = currentPosition - _draggingStart;
+            _draggingStart = currentPosition;
 
             _drawingWindowState.X += (int)distance.Value.X;
             _drawingWindowState.Y += (int)distance.Value.Y;

@@ -14,6 +14,8 @@
 
         private readonly Log _log;
 
+        private readonly DrawingWindowState _drawingWindowState;
+
         private readonly AutoResetEvent _drawFinishedEvent;
 
         private readonly Stopwatch _iterationStopwatch;
@@ -28,12 +30,13 @@
         {
             _commands = commands;
             _log = log;
+            _drawingWindowState = drawingWindowState;
 
             _drawFinishedEvent = new AutoResetEvent(true);
             _iterationStopwatch = new Stopwatch();
 
             _logicState = new LogicState();
-            _logic = new Logic(graphProvider, bitmapProvider, _log, _commands, drawingWindowState, connectionData);
+            _logic = new Logic(graphProvider, bitmapProvider, _log, _commands, connectionData);
         }
 
         public void ProcessCommand(string command)
@@ -78,7 +81,7 @@
         {
             Execute.OnUIThread(() =>
             {
-                _logic.Draw(_logicState);
+                _logic.Draw(_logicState, _drawingWindowState);
                 _drawFinishedEvent.Set();
             });
         }
@@ -95,7 +98,7 @@
 
                 Execute.OnUIThread(() =>
                 {
-                    _logic.Draw(_logicState);
+                    _logic.Draw(_logicState, _drawingWindowState);
                     _logic.UpdateGraph(_logicState);
                     _drawFinishedEvent.Set();
                 });

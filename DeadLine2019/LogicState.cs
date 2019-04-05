@@ -2,6 +2,7 @@
 {
     using System.IO;
 
+    using DeadLine2019.Algorithms;
     using DeadLine2019.Infrastructure;
 
     public class LogicState
@@ -9,6 +10,8 @@
         public bool IsInitialized { get; set; } = false;
 
         public int TurnNumber { get; set; }
+
+        public Map2D<int> Map { get; set; }
 
         public static LogicState Load(string serverName)
         {

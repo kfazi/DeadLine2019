@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class Map4D<TNode> where TNode : new()
+    public class Map4D<TNode> : IMap4D<TNode>
     {
         private readonly TNode[] _nodes;
 
@@ -14,10 +14,6 @@
             FourthDimension = fourthDimension;
 
             _nodes = new TNode[width * height * depth * fourthDimension];
-            for (var i = 0; i < Nodes.Count; i++)
-            {
-                _nodes[i] = new TNode();
-            }
         }
 
         public IReadOnlyList<TNode> Nodes => _nodes;
@@ -30,9 +26,30 @@
 
         public int FourthDimension { get; }
 
+        public TNode SafeNodeAt(int x, int y, int z, int w)
+        {
+            if (x < 0 || y < 0 || x >= Width || y >= Height || z < 0 || z >= Depth || w < 0 || w >= FourthDimension)
+            {
+                return default(TNode);
+            }
+
+            return _nodes[w * Depth * Height * Width + z * Width * Height + y * Width + x];
+        }
+
         public TNode NodeAt(int x, int y, int z, int w)
         {
-            return Nodes[w * Depth * Height * Width + z * Width * Height + y * Width + x];
+            return _nodes[w * Depth * Height * Width + z * Width * Height + y * Width + x];
+        }
+
+        public void SetNode(int x, int y, int z, int w, TNode node)
+        {
+            _nodes[w * Depth * Height * Width + z * Width * Height + y * Width + x] = node;
+        }
+
+        public TNode this[int x, int y, int z, int w]
+        {
+            get => NodeAt(x, y, z, w);
+            set => SetNode(x, y, z, w, value);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class SparseMap2D<TNode> where TNode : new()
+    public class SparseMap2D<TNode> : IMap2D<TNode>
     {
         private class SectorPosition
         {
@@ -56,6 +56,13 @@
             _onSectorCreated = onSectorCreated;
         }
 
+        public Map2D<TNode> SafeSectorAt(int x, int y)
+        {
+            var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight);
+
+            return !_sectors.TryGetValue(sectorPosition, out var sector) ? null : sector;
+        }
+
         public Map2D<TNode> SectorAt(int x, int y)
         {
             var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight);
@@ -70,10 +77,28 @@
             return sector;
         }
 
+        public TNode SafeNodeAt(int x, int y)
+        {
+            var sector = SafeSectorAt(x, y);
+            return sector == null ? default(TNode) : sector.NodeAt(x % _sectorWidth, y % _sectorHeight);
+        }
+
         public TNode NodeAt(int x, int y)
         {
             var sector = SectorAt(x, y);
             return sector.NodeAt(x % _sectorWidth, y % _sectorHeight);
+        }
+
+        public void SetNode(int x, int y, TNode node)
+        {
+            var sector = SectorAt(x, y);
+            sector.SetNode(x % _sectorWidth, y % _sectorHeight, node);
+        }
+
+        public TNode this[int x, int y]
+        {
+            get => NodeAt(x, y);
+            set => SetNode(x, y, value);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class SparseMap3D<TNode> where TNode : new()
+    public class SparseMap3D<TNode> : IMap3D<TNode>
     {
         private class SectorPosition
         {
@@ -65,6 +65,13 @@
             _onSectorCreated = onSectorCreated;
         }
 
+        public Map3D<TNode> SafeSectorAt(int x, int y, int z)
+        {
+            var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight, z / _sectorDepth);
+
+            return !_sectors.TryGetValue(sectorPosition, out var sector) ? null : sector;
+        }
+
         public Map3D<TNode> SectorAt(int x, int y, int z)
         {
             var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight, z / _sectorDepth);
@@ -79,10 +86,28 @@
             return sector;
         }
 
+        public TNode SafeNodeAt(int x, int y, int z)
+        {
+            var sector = SafeSectorAt(x, y, z);
+            return sector == null ? default(TNode) : sector.NodeAt(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth);
+        }
+
         public TNode NodeAt(int x, int y, int z)
         {
             var sector = SectorAt(x, y, z);
             return sector.NodeAt(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth);
+        }
+
+        public void SetNode(int x, int y, int z, TNode node)
+        {
+            var sector = SectorAt(x, y, z);
+            sector.SetNode(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth, node);
+        }
+
+        public TNode this[int x, int y, int z]
+        {
+            get => NodeAt(x, y, z);
+            set => SetNode(x, y, z, value);
         }
     }
 }

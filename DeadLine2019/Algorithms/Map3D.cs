@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class Map3D<TNode> where TNode : new()
+    public class Map3D<TNode> : IMap3D<TNode>
     {
         private readonly TNode[] _nodes;
 
@@ -13,10 +13,6 @@
             Depth = depth;
 
             _nodes = new TNode[width * height * depth];
-            for (var i = 0; i < Nodes.Count; i++)
-            {
-                _nodes[i] = new TNode();
-            }
         }
 
         public IReadOnlyList<TNode> Nodes => _nodes;
@@ -27,9 +23,30 @@
 
         public int Depth { get; }
 
+        public TNode SafeNodeAt(int x, int y, int z)
+        {
+            if (x < 0 || y < 0 || x >= Width || y >= Height || z < 0 || z >= Depth)
+            {
+                return default(TNode);
+            }
+
+            return _nodes[z * Width * Height + y * Width + x];
+        }
+
         public TNode NodeAt(int x, int y, int z)
         {
-            return Nodes[z * Width * Height + y * Width + x];
+            return _nodes[z * Width * Height + y * Width + x];
+        }
+
+        public void SetNode(int x, int y, int z, TNode node)
+        {
+            _nodes[z * Width * Height + y * Width + x] = node;
+        }
+
+        public TNode this[int x, int y, int z]
+        {
+            get => NodeAt(x, y, z);
+            set => SetNode(x, y, z, value);
         }
     }
 }

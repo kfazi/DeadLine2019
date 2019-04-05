@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public class SparseMap4D<TNode> where TNode : new()
+    public class SparseMap4D<TNode> : IMap4D<TNode>
     {
         private class SectorPosition
         {
@@ -72,6 +72,13 @@
             _onSectorCreated = onSectorCreated;
         }
 
+        public Map4D<TNode> SafeSectorAt(int x, int y, int z, int w)
+        {
+            var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight, z / _sectorDepth, w / _sectorFourthDimension);
+
+            return !_sectors.TryGetValue(sectorPosition, out var sector) ? null : sector;
+        }
+
         public Map4D<TNode> SectorAt(int x, int y, int z, int w)
         {
             var sectorPosition = new SectorPosition(x / _sectorWidth, y / _sectorHeight, z / _sectorDepth, w / _sectorFourthDimension);
@@ -86,10 +93,28 @@
             return sector;
         }
 
+        public TNode SafeNodeAt(int x, int y, int z, int w)
+        {
+            var sector = SafeSectorAt(x, y, z, w);
+            return sector == null ? default(TNode) : sector.NodeAt(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth, w % _sectorFourthDimension);
+        }
+
         public TNode NodeAt(int x, int y, int z, int w)
         {
             var sector = SectorAt(x, y, z, w);
             return sector.NodeAt(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth, w % _sectorFourthDimension);
+        }
+
+        public void SetNode(int x, int y, int z, int w, TNode node)
+        {
+            var sector = SectorAt(x, y, z, w);
+            sector.SetNode(x % _sectorWidth, y % _sectorHeight, z % _sectorDepth, w % _sectorFourthDimension, node);
+        }
+
+        public TNode this[int x, int y, int z, int w]
+        {
+            get => NodeAt(x, y, z, w);
+            set => SetNode(x, y, z, w, value);
         }
     }
 }
