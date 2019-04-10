@@ -26,7 +26,12 @@
 
         private readonly WriteableBitmap _treeSprite;
 
-        public Logic(IGraphProvider graphProvider, IBitmapProvider bitmapProvider, Log logger, Commands commands, ConnectionData connectionData)
+        public Logic(
+            IGraphProvider graphProvider,
+            IBitmapProvider bitmapProvider,
+            Log logger,
+            Commands commands,
+            ConnectionData connectionData)
         {
             GraphProvider = graphProvider;
             Bitmap = bitmapProvider.Bitmap;
