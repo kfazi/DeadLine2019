@@ -16,6 +16,8 @@
 
         private readonly DrawingWindowState _drawingWindowState;
 
+        private readonly BitmapGraphProvider _bitmapGraphProvider;
+
         private readonly AutoResetEvent _drawFinishedEvent;
 
         private readonly Stopwatch _iterationStopwatch;
@@ -26,17 +28,18 @@
 
         private bool _finished;
 
-        public MainLoop(Commands commands, Log log, DrawingWindowState drawingWindowState, IGraphProvider graphProvider, IBitmapProvider bitmapProvider, ConnectionData connectionData)
+        public MainLoop(Commands commands, Log log, DrawingWindowState drawingWindowState, BitmapGraphProvider bitmapGraphProvider, ConnectionData connectionData)
         {
             _commands = commands;
             _log = log;
             _drawingWindowState = drawingWindowState;
+            _bitmapGraphProvider = bitmapGraphProvider;
 
             _drawFinishedEvent = new AutoResetEvent(true);
             _iterationStopwatch = new Stopwatch();
 
             _logicState = new LogicState();
-            _logic = new Logic(graphProvider, bitmapProvider, _log, _commands, connectionData);
+            _logic = new Logic(bitmapGraphProvider, bitmapGraphProvider, _log, _commands, connectionData);
         }
 
         public void ProcessCommand(string command)
@@ -98,8 +101,16 @@
 
                 Execute.OnUIThread(() =>
                 {
-                    _logic.Draw(_logicState, _drawingWindowState);
-                    _logic.UpdateGraph(_logicState);
+                    if (_bitmapGraphProvider.IsBitmapVisible)
+                    {
+                        _logic.Draw(_logicState, _drawingWindowState);
+                    }
+
+                    if (_bitmapGraphProvider.IsGraphVisible)
+                    {
+                        _logic.UpdateGraph(_logicState);
+                    }
+
                     _drawFinishedEvent.Set();
                 });
 

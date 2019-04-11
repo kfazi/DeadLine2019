@@ -153,6 +153,9 @@
     <Compile Include="Algorithms\Map4D.cs" />
     <Compile Include="Algorithms\ParticleSwarmOptimization.cs" />
     <Compile Include="Algorithms\Point2D.cs" />
+    <Compile Include="Algorithms\Point3D.cs" />
+    <Compile Include="Algorithms\Point4D.cs" />
+    <Compile Include="Algorithms\RTree.cs" />
     <Compile Include="Algorithms\SparseMap2D.cs" />
     <Compile Include="Algorithms\SparseMap3D.cs" />
     <Compile Include="Algorithms\SparseMap4D.cs" />
@@ -181,6 +184,7 @@
     <Compile Include="Infrastructure\JsonExtensions.cs" />
     <Compile Include="Infrastructure\MainView.xaml.cs" />
     <Compile Include="Infrastructure\SolutionDirectory.cs" />
+    <Compile Include="Infrastructure\StackExtensions.cs" />
     <Compile Include="Logic.cs" />
     <Compile Include="LogicState.cs" />
     <Compile Include="Infrastructure\Log.cs" />

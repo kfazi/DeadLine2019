@@ -11,7 +11,7 @@ If ([System.IO.Directory]::Exists("C:\Program Files (x86)\Microsoft Visual Studi
 }
 
 pushd $vcDir
-cmd /c "vcvars32.bat&set" |
+cmd /c "vcvars64.bat&set" |
 foreach {
   if ($_ -match "=") {
     $v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
@@ -54,4 +54,4 @@ $time = (Get-Date).ToString('ddHHmmss')
 git add -A
 git commit -m 'Release'
 git tag $branch-$time
-git push --tags
+# git push --tags

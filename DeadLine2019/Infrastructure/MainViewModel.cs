@@ -215,6 +215,11 @@ namespace DeadLine2019.Infrastructure
 
         public static bool IsScrolledToEnd(TextBox textBox)
         {
+            if (textBox.ExtentHeight < textBox.ViewportHeight)
+            {
+                return true;
+            }
+
             return Math.Abs(textBox.VerticalOffset + textBox.ViewportHeight - textBox.ExtentHeight) < 0.01;
         }
 
