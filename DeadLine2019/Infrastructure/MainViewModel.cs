@@ -1,5 +1,6 @@
 namespace DeadLine2019.Infrastructure
 {
+    using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
@@ -57,7 +58,7 @@ namespace DeadLine2019.Infrastructure
 
         public bool IsGraphVisible => _bitmapGraphProvider.IsGraphVisible;
 
-        public async Task MouseMoveCommandAsync(ActionExecutionContext context)
+        public void MouseMoveCommand(ActionExecutionContext context)
         {
             if (!(context.EventArgs is MouseEventArgs mouseEventArgs))
             {
@@ -79,7 +80,7 @@ namespace DeadLine2019.Infrastructure
             _mainLoop.Draw();
         }
 
-        public async Task MouseDownCommandAsync(ActionExecutionContext context)
+        public void MouseDownCommand(ActionExecutionContext context)
         {
             if (!(context.EventArgs is MouseEventArgs mouseEventArgs))
             {
@@ -92,7 +93,7 @@ namespace DeadLine2019.Infrastructure
             }
         }
 
-        public async Task MouseUpCommandAsync(ActionExecutionContext context)
+        public void MouseUpCommand(ActionExecutionContext context)
         {
             if (!(context.EventArgs is MouseEventArgs mouseEventArgs))
             {
@@ -105,7 +106,7 @@ namespace DeadLine2019.Infrastructure
             }
         }
 
-        public async Task MouseWheelCommandAsync(ActionExecutionContext context)
+        public void MouseWheelCommand(ActionExecutionContext context)
         {
             if (!(context.EventArgs is MouseWheelEventArgs mouseWheelEventArgs))
             {
@@ -116,7 +117,7 @@ namespace DeadLine2019.Infrastructure
             _mainLoop.Draw();
         }
 
-        public async Task CommandInputConfirmed(ActionExecutionContext context)
+        public async Task CommandInputConfirmedAsync(ActionExecutionContext context)
         {
             if (!(context.EventArgs is KeyEventArgs keyEventArgs) || !(context.Source is TextBox inputTextBox))
             {
@@ -202,11 +203,19 @@ namespace DeadLine2019.Infrastructure
                 return;
             }
 
-            var scrollToEnd = logTextBox.CaretIndex == logTextBox.Text.Length;
+            var scrollToEnd = IsScrolledToEnd(logTextBox);
+
+            logTextBox.Text = Log.Text;
+
             if (scrollToEnd)
             {
                 logTextBox.ScrollToEnd();
             }
+        }
+
+        public static bool IsScrolledToEnd(TextBox textBox)
+        {
+            return Math.Abs(textBox.VerticalOffset + textBox.ViewportHeight - textBox.ExtentHeight) < 0.01;
         }
 
         private void OnBitmapGraphChanged(object sender, PropertyChangedEventArgs e)

@@ -38,8 +38,8 @@
             Logger = logger;
             Commands = commands;
 
-            bitmapProvider.ShowBitmap();
-            graphProvider.ShowGraph();
+            bitmapProvider.HideBitmap();
+            graphProvider.HideGraph();
 
             _groundSprite = BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Tiles\tile_05.png"), 16, 16);
             _waterSprite = BitmapLoader.Load(SolutionDirectory.Get(@"Images\Shooter\Tiles\tile_19.png"), 16, 16);

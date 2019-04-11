@@ -2,7 +2,15 @@ param (
     [switch]$runAll
 )
 
-pushd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\"
+If ([System.IO.Directory]::Exists("C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\")) {
+    $vcDir = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\"
+} ElseIf ([System.IO.Directory]::Exists("C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\")) {
+    $vcDir = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\"
+} ElseIf ([System.IO.Directory]::Exists("C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\")) {
+    $vcDir = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\"
+}
+
+pushd $vcDir
 cmd /c "vcvars32.bat&set" |
 foreach {
   if ($_ -match "=") {

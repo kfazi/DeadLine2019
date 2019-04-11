@@ -13,13 +13,12 @@
                  FontFamily="Courier New"
                  FontSize="12"
                  IsReadOnly="True"
-                 VerticalScrollBarVisibility="Visible"
-                 Text="{Binding Path=Log.Text}" />
+                 VerticalScrollBarVisibility="Visible" />
         
         <TextBox Grid.Row="1"
                  x:Name="CommandInput"
                  Height="20"
-                 cal:Message.Attach="[Event PreviewKeyDown] = [Action CommandInputConfirmed($executionContext)]" />
+                 cal:Message.Attach="[Event PreviewKeyDown] = [Action CommandInputConfirmedAsync($executionContext)]" />
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -31,10 +30,10 @@
                    Visibility="{Binding Path=BitmapVisibility, Converter={StaticResource BoolToVisibilityConverter}}"
                    SnapsToDevicePixels="True"
                    Stretch="None"
-                   cal:Message.Attach="[Event MouseDown] = [Action MouseDownCommandAsync($executionContext)];
-                                       [Event MouseUp] = [Action MouseUpCommandAsync($executionContext)];
-                                       [Event MouseMove] = [Action MouseMoveCommandAsync($executionContext)];
-                                       [Event MouseWheel] = [Action MouseWheelCommandAsync($executionContext)];" />
+                   cal:Message.Attach="[Event MouseDown] = [Action MouseDownCommand($executionContext)];
+                                       [Event MouseUp] = [Action MouseUpCommand($executionContext)];
+                                       [Event MouseMove] = [Action MouseMoveCommand($executionContext)];
+                                       [Event MouseWheel] = [Action MouseWheelCommand($executionContext)];" />
             <DockPanel x:Name="GraphPanel"
                        Visibility="{Binding Path=GraphVisibility, Converter={StaticResource BoolToVisibilityConverter}}"
                        Grid.Column="1">

@@ -102,9 +102,6 @@
     <Reference Include="Priority Queue, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OptimizedPriorityQueue.4.2.0\lib\net45\Priority Queue.dll</HintPath>
     </Reference>
-    <Reference Include="SevenZip, Version=19.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SevenZip.19.0.0\lib\net20\SevenZip.dll</HintPath>
-    </Reference>
     <Reference Include="SevenZipSharp, Version=1.1.136.0, Culture=neutral, PublicKeyToken=c8ff6ba0184838bb, processorArchitecture=MSIL">
       <HintPath>..\packages\Squid-Box.SevenZipSharp.1.1.136\lib\net45\SevenZipSharp.dll</HintPath>
     </Reference>
