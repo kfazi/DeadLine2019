@@ -59,6 +59,7 @@
             var rightBorder = new List<int>();
             var topBorder = new List<int>();
             var bottomBorder = new List<int>();
+            var wallsTree = new RTree<Edge>(5, 9);
             using (var voronoi = new BoostVoronoi())
             {
                 foreach (var contour in contours)
@@ -67,6 +68,7 @@
                     foreach (var point in contour.Skip(1))
                     {
                         voronoi.AddSegment((int)startPoint.X, (int)startPoint.Y, (int)point.X, (int)point.Y);
+                        wallsTree.Insert(new Edge { Start = startPoint, End = point }, new RTree<Edge>.Envelope(startPoint, point));
 
                         if ((int)startPoint.X == 0 && (int)point.X == 0)
                         {
@@ -96,10 +98,10 @@
                     }
                 }
 
-                AddVerticalBorder(voronoi, leftBorder.OrderBy(x => x).ToList(), 0, map.Height - 1);
-                AddVerticalBorder(voronoi, rightBorder.OrderBy(x => x).ToList(), map.Width - 1, map.Height - 1);
-                AddHorizontalBorder(voronoi, topBorder.OrderBy(x => x).ToList(), 0, map.Width - 1);
-                AddHorizontalBorder(voronoi, bottomBorder.OrderBy(x => x).ToList(), map.Height - 1, map.Width - 1);
+                AddVerticalBorder(voronoi, wallsTree, leftBorder.OrderBy(x => x).ToList(), 0, map.Height - 1);
+                AddVerticalBorder(voronoi, wallsTree, rightBorder.OrderBy(x => x).ToList(), map.Width - 1, map.Height - 1);
+                AddHorizontalBorder(voronoi, wallsTree, topBorder.OrderBy(x => x).ToList(), 0, map.Width - 1);
+                AddHorizontalBorder(voronoi, wallsTree, bottomBorder.OrderBy(x => x).ToList(), map.Height - 1, map.Width - 1);
 
                 var visitedTwins = new List<long>();
                 voronoi.Construct();
@@ -153,14 +155,14 @@
                 var startNode = nodes.Find(x => x.Point == node.Start);
                 if (startNode == null)
                 {
-                    startNode = CreateNode(map, isBlocking, node.Start);
+                    startNode = CreateNode(wallsTree, node.Start);
                     nodes.Add(startNode);
                 }
 
                 var endNode = nodes.Find(x => x.Point == node.End);
                 if (endNode == null)
                 {
-                    endNode = CreateNode(map, isBlocking, node.End);
+                    endNode = CreateNode(wallsTree, node.End);
                     nodes.Add(endNode);
                 }
 
@@ -324,55 +326,16 @@
             }
         }
 
-        private static InternalNode CreateNode<TNode>(Map2D<TNode> map, Func<TNode, bool> isBlocking, Point2D point)
+        private static InternalNode CreateNode(RTree<Edge> wallsTree, Point2D point)
         {
-            var minDistance = double.MaxValue;
-            Point2D closestObstacle = null;
+            var closestObstacle = wallsTree.GetKNearest(1, point, (edge, p) => Math.Sqrt(DistanceSquared(p, edge.Start, edge.End))).First().Data;
 
-            var maxRadius = Math.Max(map.Width, map.Height);
-            for (var radius = 1; radius <= maxRadius; radius++)
+            return new InternalNode
             {
-                for (var y = -radius; y < radius + 1; y++)
-                {
-                    if (point.Y + y < 0 || point.Y + y >= map.Height)
-                    {
-                        continue;
-                    }
-
-                    for (var x = -radius; x < radius + 1; x++)
-                    {
-                        if (point.X + x < 0 || point.X + x >= map.Width)
-                        {
-                            continue;
-                        }
-
-                        var node = map[(int)(point.X + x), (int)(point.Y + y)];
-                        if (isBlocking(node))
-                        {
-                            var distance = Point2D.DistanceSquared(point, new Point2D(point.X + x, point.Y + y));
-                            if (distance >= minDistance)
-                            {
-                                continue;
-                            }
-
-                            minDistance = distance;
-                            closestObstacle = new Point2D(point.X + x, point.Y + y);
-                        }
-                    }
-                }
-
-                if (closestObstacle != null)
-                {
-                    return new InternalNode
-                    {
-                        Point = point,
-                        Neighbors = new List<InternalNode>(),
-                        MinDistanceToObstacleSquared = minDistance
-                    };
-                }
-            }
-
-            throw new InvalidOperationException("Cannot create terrain node. Obstacle not found.");
+                Point = point,
+                Neighbors = new List<InternalNode>(),
+                MinDistanceToObstacleSquared = DistanceSquared(point, closestObstacle.Start, closestObstacle.End)
+            };
         }
 
         private static bool IsOnNonBlocking<TNode>(Edge edge, Map2D<TNode> map, Func<TNode, bool> isBlocking)
@@ -407,12 +370,13 @@
             return componentX * componentX + componentY * componentY;
         }
 
-        private static void AddVerticalBorder(BoostVoronoi voronoi, IReadOnlyList<int> border, int x, int maxY)
+        private static void AddVerticalBorder(BoostVoronoi voronoi, RTree<Edge> wallsTree, IReadOnlyList<int> border, int x, int maxY)
         {
             var index = 0;
             if (!border.Any())
             {
                 voronoi.AddSegment(x, 0, x, maxY);
+                wallsTree.Insert(new Edge { Start = new Point2D(x, 0), End = new Point2D(x, maxY) }, new RTree<Edge>.Envelope(x, 0, x, maxY));
                 return;
             }
 
@@ -421,6 +385,7 @@
             {
                 var y2 = index >= border.Count ? maxY : border[index++];
                 voronoi.AddSegment(x, firstY, x, y2);
+                wallsTree.Insert(new Edge { Start = new Point2D(x, firstY), End = new Point2D(x, y2) }, new RTree<Edge>.Envelope(x, firstY, x, y2));
             }
 
             while (index < border.Count)
@@ -428,15 +393,17 @@
                 var y1 = border[index++];
                 var y2 = index >= border.Count ? maxY : border[index++];
                 voronoi.AddSegment(x, y1, x, y2);
+                wallsTree.Insert(new Edge { Start = new Point2D(x, y1), End = new Point2D(x, y2) }, new RTree<Edge>.Envelope(x, y1, x, y2));
             }
         }
 
-        private static void AddHorizontalBorder(BoostVoronoi voronoi, IReadOnlyList<int> border, int y, int maxX)
+        private static void AddHorizontalBorder(BoostVoronoi voronoi, RTree<Edge> wallsTree, IReadOnlyList<int> border, int y, int maxX)
         {
             var index = 0;
             if (!border.Any())
             {
                 voronoi.AddSegment(0, y, maxX, y);
+                wallsTree.Insert(new Edge { Start = new Point2D(0, y), End = new Point2D(maxX, y) }, new RTree<Edge>.Envelope(0, y, maxX, y));
                 return;
             }
 
@@ -445,6 +412,7 @@
             {
                 var x2 = index >= border.Count ? maxX : border[index++];
                 voronoi.AddSegment(firstX, y, x2, y);
+                wallsTree.Insert(new Edge { Start = new Point2D(firstX, y), End = new Point2D(x2, y) }, new RTree<Edge>.Envelope(firstX, y, x2, y));
             }
 
             while (index < border.Count)
@@ -452,6 +420,7 @@
                 var x1 = border[index++];
                 var x2 = index >= border.Count ? maxX : border[index++];
                 voronoi.AddSegment(x1, y, x2, y);
+                wallsTree.Insert(new Edge { Start = new Point2D(x1, y), End = new Point2D(x2, y) }, new RTree<Edge>.Envelope(x1, y, x2, y));
             }
         }
     }
