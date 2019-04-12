@@ -1,4 +1,4 @@
-/*
+﻿/*
 Microsoft Automatic Graph Layout,MSAGL 
 
 Copyright (c) Microsoft Corporation
@@ -26,9 +26,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-﻿using System;
+ using System;
 using System.Windows;
-using Microsoft.Msagl.Drawing;
 
 namespace Microsoft.Msagl.WpfGraphControl {
     internal class ClickCounter {

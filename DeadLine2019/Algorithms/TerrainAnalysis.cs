@@ -22,17 +22,32 @@
             public IReadOnlyList<TerrainNode> Neighbors { get; }
 
             public bool IsChoke { get; }
+
+            public int ChokeRadius { get; set; }
         }
 
         private class InternalNode
         {
+            public enum NodeType
+            {
+                None,
+                Choke,
+                Area
+            }
+
             public Point2D Point { get; set; }
 
             public List<InternalNode> Neighbors { get; set; }
 
             public double MinDistanceToObstacleSquared { get; set; }
 
-            public bool IsChoke { get; set; }
+            public NodeType Type { get; set; }
+
+            public bool IsMaximal { get; set; }
+
+            public InternalNode Parent { get; set; }
+
+            public InternalNode LastValid { get; set; }
         }
 
         private class Edge
@@ -172,14 +187,39 @@
 
             PruneNodes(nodes, pruneDistanceToObstacleSquared);
 
-            GetPointsOfInterest(nodes);
+            GetPointsOfInterest(nodes, pruneDistanceToObstacleSquared, maxDistanceToMergeSquared);
 
             var mergedNodes = MergeNodes(nodes, maxDistanceToMergeSquared);
 
-            return MapToTerrainNodes(mergedNodes);
+            return MapToTerrainNodes(mergedNodes, wallsTree);
         }
 
-        private static TerrainNode MapToTerrainNode(InternalNode internalNode, IDictionary<InternalNode, TerrainNode> mappedNodes)
+        private static Point2D ClosestPointOnEdge(Edge edge, Point2D point)
+        {
+            var deltaX = edge.End.X - edge.Start.X;
+            var deltaY = edge.End.Y - edge.Start.Y;
+
+            if (Math.Abs(deltaX) < 0.001 && Math.Abs(deltaY) < 0.001)
+            {
+                return edge.Start;
+            }
+
+            var lambdaS = ((point.X - edge.Start.X) * deltaX + (point.Y - edge.Start.Y) * deltaY) / (deltaX * deltaX + deltaY * deltaY);
+
+            if (lambdaS < 0)
+            {
+                return edge.Start;
+            }
+
+            if (lambdaS > 1)
+            {
+                return edge.End;
+            }
+
+            return new Point2D(edge.Start.X + lambdaS * deltaX, edge.Start.Y + lambdaS * deltaY);
+        }
+
+        private static TerrainNode MapToTerrainNode(InternalNode internalNode, IDictionary<InternalNode, TerrainNode> mappedNodes, RTree<Edge> wallsTree)
         {
             if (mappedNodes.TryGetValue(internalNode, out var terrainNode))
             {
@@ -187,16 +227,23 @@
             }
 
             var neighbors = new List<TerrainNode>();
-            terrainNode = new TerrainNode(internalNode.Point, internalNode.IsChoke, neighbors);
+            terrainNode = new TerrainNode(internalNode.Point, internalNode.Type == InternalNode.NodeType.Choke, neighbors);
+
+            if (internalNode.Type == InternalNode.NodeType.Choke)
+            {
+                var chokeEdge = wallsTree.GetKNearest(1, internalNode.Point, (edge, p) => Math.Sqrt(DistanceSquared(p, edge.Start, edge.End))).First().Data;
+
+                terrainNode.ChokeRadius = (int)(Math.Sqrt(DistanceSquared(internalNode.Point, chokeEdge.Start, chokeEdge.End)));
+            }
 
             mappedNodes[internalNode] = terrainNode;
 
-            neighbors.AddRange(internalNode.Neighbors.Select(x => MapToTerrainNode(x, mappedNodes)));
+            neighbors.AddRange(internalNode.Neighbors.Select(x => MapToTerrainNode(x, mappedNodes, wallsTree)));
 
             return terrainNode;
         }
 
-        private static IReadOnlyList<TerrainNode> MapToTerrainNodes(List<InternalNode> nodes)
+        private static IReadOnlyList<TerrainNode> MapToTerrainNodes(IEnumerable<InternalNode> nodes, RTree<Edge> wallsTree)
         {
             var mappedNodes = new Dictionary<InternalNode, TerrainNode>();
 
@@ -209,7 +256,7 @@
                     continue;
                 }
 
-                terrainNodes.Add(MapToTerrainNode(node, mappedNodes));
+                terrainNodes.Add(MapToTerrainNode(node, mappedNodes, wallsTree));
             }
 
             return terrainNodes;
@@ -228,7 +275,7 @@
                         continue;
                     }
 
-                    if (removeCandidate.IsChoke != node.IsChoke)
+                    if (removeCandidate.Type != InternalNode.NodeType.None && removeCandidate.Type != node.Type)
                     {
                         continue;
                     }
@@ -298,32 +345,202 @@
             }
         }
 
-        private static void GetPointsOfInterest(IEnumerable<InternalNode> nodes)
+        private static void GetPointsOfInterest(IEnumerable<InternalNode> nodes, int pruneDistanceToObstacleSquared, int maxDistanceToMergeSquared)
         {
+            var visitedNodes = new HashSet<InternalNode>();
+
+            var queue = new Queue<InternalNode>();
             foreach (var node in nodes)
             {
+                if (node.Neighbors.Count != 1)
+                {
+                    continue;
+                }
+
+                node.Type = InternalNode.NodeType.Area;
+                visitedNodes.Add(node);
+                var neighbor = node.Neighbors.First();
+                neighbor.Parent = node;
+                visitedNodes.Add(neighbor);
+                queue.Enqueue(neighbor);
+                break;
+            }
+
+            while (queue.Any())
+            {
+                var node = queue.Dequeue();
+                var parent = node.Parent;
+
                 if (node.Neighbors.Count != 2)
                 {
-                    node.IsChoke = false;
+                    if (parent.Type == InternalNode.NodeType.Choke && Point2D.DistanceSquared(parent.Point, node.Point) < maxDistanceToMergeSquared)
+                    {
+                        parent.Type = InternalNode.NodeType.None;
+                    }
 
-                    continue;
+                    node.Type = InternalNode.NodeType.Area;
+
+                    if (parent.Type == InternalNode.NodeType.Choke ||
+                        node.MinDistanceToObstacleSquared > parent.MinDistanceToObstacleSquared)
+                    {
+                        parent = node;
+                        parent.IsMaximal = true;
+                    }
+                }
+                else
+                {
+                    var localMinimal = true;
+                    foreach (var neighbor in node.Neighbors)
+                    {
+                        if (node.MinDistanceToObstacleSquared > neighbor.MinDistanceToObstacleSquared)
+                        {
+                            localMinimal = false;
+                            break;
+                        }
+                    }
+
+                    if (localMinimal)
+                    {
+                        if (!parent.IsMaximal)
+                        {
+                            if (node.MinDistanceToObstacleSquared < parent.MinDistanceToObstacleSquared)
+                            {
+                                parent.Type = InternalNode.NodeType.None;
+                                node.Type = InternalNode.NodeType.Choke;
+                                node.LastValid = parent;
+                                parent = node;
+                                parent.IsMaximal = false;
+                            }
+                        }
+                        else
+                        {
+                            var distance = Point2D.DistanceSquared(node.Point, parent.Point);
+                            var enoughDistance = distance >= maxDistanceToMergeSquared && distance > parent.MinDistanceToObstacleSquared;
+                            if (enoughDistance || EnoughDifference(node.MinDistanceToObstacleSquared, parent.MinDistanceToObstacleSquared))
+                            {
+                                node.Type = InternalNode.NodeType.Choke;
+                                parent = node;
+                                parent.IsMaximal = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var localMaximal = true;
+                        foreach (var neighbor in node.Neighbors)
+                        {
+                            if (node.MinDistanceToObstacleSquared < neighbor.MinDistanceToObstacleSquared)
+                            {
+                                localMaximal = false;
+                            }
+                        }
+
+                        if (localMaximal)
+                        {
+                            if (node.MinDistanceToObstacleSquared < pruneDistanceToObstacleSquared)
+                            {
+                            }
+                            else if (parent.IsMaximal)
+                            {
+                                if (node.MinDistanceToObstacleSquared > parent.MinDistanceToObstacleSquared)
+                                {
+                                    if (parent.Neighbors.Count == 2)
+                                    {
+                                        parent.Type = InternalNode.NodeType.None;
+                                    }
+
+                                    node.Type = InternalNode.NodeType.Area;
+                                    parent = node;
+                                    parent.IsMaximal = true;
+                                }
+                            }
+                            else
+                            {
+                                if (EnoughDifference(node.MinDistanceToObstacleSquared, parent.MinDistanceToObstacleSquared))
+                                {
+                                    node.Type = InternalNode.NodeType.Area;
+                                    parent = node;
+                                    parent.IsMaximal = true;
+                                }
+                            }
+                        }
+                    }
                 }
 
-                var neighborsMaxRadius = node.Neighbors.Max(x => x.MinDistanceToObstacleSquared);
-                var neighborsMinRadius = node.Neighbors.Min(x => x.MinDistanceToObstacleSquared);
-
-                if (node.MinDistanceToObstacleSquared < neighborsMinRadius)
+                foreach (var neighbor in node.Neighbors)
                 {
-                    node.IsChoke = true;
+                    if (!visitedNodes.Contains(neighbor))
+                    {
+                        queue.Enqueue(neighbor);
+                        visitedNodes.Add(neighbor);
+                        neighbor.Parent = parent;
+                    }
+                    else
+                    {
+                        InternalNode parent0;
+                        InternalNode parent1;
+                        if (node.Type == InternalNode.NodeType.Area || node.Type == InternalNode.NodeType.Choke)
+                        {
+                            parent0 = node;
+                        }
+                        else
+                        {
+                            parent0 = node.Parent;
+                        }
 
-                    continue;
-                }
+                        if (neighbor.Type == InternalNode.NodeType.Area || neighbor.Type == InternalNode.NodeType.Choke)
+                        {
+                            parent1 = neighbor;
+                        }
+                        else
+                        {
+                            parent1 = neighbor.Parent;
+                        }
 
-                if (node.MinDistanceToObstacleSquared > neighborsMaxRadius)
-                {
-                    node.IsChoke = false;
+                        var isMaximal0 = parent0.Type == InternalNode.NodeType.Area;
+                        var isMaximal1 = parent1.Type == InternalNode.NodeType.Area;
+
+                        if (isMaximal0 != isMaximal1 && Point2D.DistanceSquared(parent0.Point, parent1.Point) < maxDistanceToMergeSquared)
+                        {
+                            var nodeToDelete = parent0;
+
+                            if (isMaximal0)
+                            {
+                                nodeToDelete = parent1;
+                            }
+
+                            nodeToDelete.Type = InternalNode.NodeType.None;
+
+                            if (nodeToDelete.LastValid != null)
+                            {
+                                nodeToDelete.LastValid.Type = InternalNode.NodeType.Choke;
+                            }
+                        }
+                        else
+                        {
+                            if (!isMaximal0 && !isMaximal1 && parent0 != parent1)
+                            {
+                                var nodeToDelete = parent0;
+                                if (parent0.MinDistanceToObstacleSquared < parent1.MinDistanceToObstacleSquared)
+                                {
+                                    nodeToDelete = parent1;
+                                }
+
+                                nodeToDelete.Type = InternalNode.NodeType.None;
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        private static bool EnoughDifference(double a, double b)
+        {
+            var diff = Math.Abs(a - b);
+            var largest = Math.Max(a, b);
+            var minDiff = Math.Max(2.0, largest * 0.31);
+
+            return diff > minDiff;
         }
 
         private static InternalNode CreateNode(RTree<Edge> wallsTree, Point2D point)
