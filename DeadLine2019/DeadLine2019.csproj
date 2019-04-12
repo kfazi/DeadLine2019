@@ -151,6 +151,7 @@
     <Compile Include="Algorithms\Map2D.cs" />
     <Compile Include="Algorithms\Map3D.cs" />
     <Compile Include="Algorithms\Map4D.cs" />
+    <Compile Include="Algorithms\OrderedCollection.cs" />
     <Compile Include="Algorithms\ParticleSwarmOptimization.cs" />
     <Compile Include="Algorithms\Point2D.cs" />
     <Compile Include="Algorithms\Point3D.cs" />

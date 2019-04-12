@@ -3,11 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
 
     using DeadLine2019.Infrastructure;
 
-    public class RTree<TNode>
+    public class RTree<T>
     {
         public class Envelope
         {
@@ -65,21 +64,60 @@
             {
                 return X1 <= b.X1 && Y1 <= b.Y1 && b.X2 <= X2 && b.Y2 <= Y2;
             }
+
+            public bool Contains(Point2D point)
+            {
+                return X1 <= point.X && Y1 <= point.X && point.X <= X2 && point.X <= Y2;
+            }
+
+            private static double DistanceSquared(Point2D point, Point2D lineStart, Point2D lineEnd)
+            {
+                var segmentLength = Point2D.DistanceSquared(lineStart, lineEnd);
+                if (Math.Abs(segmentLength) < 0.0001)
+                {
+                    return Point2D.DistanceSquared(point, lineStart);
+                }
+
+                var t = ((point.X - lineStart.X) * (lineEnd.X - lineStart.X) + (point.Y - lineStart.Y) * (lineEnd.Y - lineStart.Y)) / segmentLength;
+                t = Math.Max(0, Math.Min(1, t));
+
+                var componentX = point.X - (lineStart.X + t * (lineEnd.X - lineStart.X));
+                var componentY = point.Y - (lineStart.Y + t * (lineEnd.Y - lineStart.Y));
+
+                return componentX * componentX + componentY * componentY;
+            }
+
+            public static double Distance(Point2D point, Envelope envelope)
+            {
+                if (envelope.Contains(point))
+                {
+                    return 0;
+                }
+
+                var distanceLeft = DistanceSquared(point, new Point2D(envelope.X1, envelope.Y1), new Point2D(envelope.X1, envelope.Y2));
+                var distanceRight = DistanceSquared(point, new Point2D(envelope.X2, envelope.Y1), new Point2D(envelope.X2, envelope.Y2));
+                var distanceTop = DistanceSquared(point, new Point2D(envelope.X1, envelope.Y1), new Point2D(envelope.X2, envelope.Y1));
+                var distanceBottom = DistanceSquared(point, new Point2D(envelope.X1, envelope.Y2), new Point2D(envelope.X2, envelope.Y2));
+
+                var distance = Math.Min(distanceLeft, Math.Min(distanceRight, Math.Min(distanceTop, distanceBottom)));
+
+                return Math.Sqrt(distance);
+            }
         }
 
         public class Node
         {
-            public Node() : this(default, new Envelope())
+            public Node() : this(default(T), new Envelope())
             {
             }
 
-            public Node(TNode data, Envelope envelope)
+            public Node(T data, Envelope envelope)
             {
                 Data = data;
                 Envelope = envelope;
             }
 
-            public TNode Data { get; }
+            public T Data { get; }
 
             public Envelope Envelope { get; set; }
 
@@ -90,13 +128,23 @@
             public List<Node> Children { get; } = new List<Node>();
         }
 
-        private static readonly EqualityComparer<TNode> Comparer = EqualityComparer<TNode>.Default;
+        private class GetKNearestComparer : IComparer<Tuple<Node, double>>
+        {
+            public static readonly GetKNearestComparer Instance = new GetKNearestComparer();
+
+            public int Compare(Tuple<Node, double> x, Tuple<Node, double> y)
+            {
+                return (int)(x.Item2 - y.Item2);
+            }
+        }
+
+        private static readonly EqualityComparer<T> Comparer = EqualityComparer<T>.Default;
 
         private readonly int _maxEntries;
 
         private readonly int _minEntries;
 
-        private Node _root;
+        private Node _rootNode;
 
         public RTree(int minEntries, int maxEntries)
         {
@@ -117,25 +165,25 @@
 
             var node = BuildOneLevel(nodes.OrderBy(n => n.Envelope.X1).ToList(), 0, 0);
 
-            if (_root.Children.Count == 0)
+            if (_rootNode.Children.Count == 0)
             {
-                _root = node;
+                _rootNode = node;
 
             }
-            else if (_root.Height == node.Height)
+            else if (_rootNode.Height == node.Height)
             {
-                SplitRoot(_root, node);
+                SplitRoot(_rootNode, node);
             }
             else
             {
-                if (_root.Height < node.Height)
+                if (_rootNode.Height < node.Height)
                 {
-                    var tmpNode = _root;
-                    _root = node;
+                    var tmpNode = _rootNode;
+                    _rootNode = node;
                     node = tmpNode;
                 }
 
-                Insert(node, _root.Height - node.Height - 1);
+                Insert(node, _rootNode.Height - node.Height - 1);
             }
         }
 
@@ -188,7 +236,7 @@
 
         public IEnumerable<Node> Search(Envelope envelope)
         {
-            var node = _root;
+            var node = _rootNode;
 
             if (!envelope.Intersects(node.Envelope))
             {
@@ -232,6 +280,44 @@
             return result;
         }
 
+        public IEnumerable<Node> GetKNearest(int k, Point2D point, Func<T, Point2D, double> getDistance)
+        {
+            var nearestList = new SortedCollection<Tuple<Node, double>>(GetKNearestComparer.Instance);
+            KNearestTraversal(nearestList, k, point, getDistance, _rootNode);
+            return nearestList.Select(x => x.Item1);
+        }
+
+        private static void KNearestTraversal(ICollection<Tuple<Node, double>> nearestList, int k, Point2D point, Func<T, Point2D, double> getDistance, Node node)
+        {
+            if (!node.Children.Any())
+            {
+                var distance = getDistance(node.Data, point);
+                if (nearestList.Count < k || distance < nearestList.Last().Item2)
+                {
+                    nearestList.Add(new Tuple<Node, double>(node, distance));
+                    if (nearestList.Count > k)
+                    {
+                        nearestList.Remove(nearestList.Last());
+                    }
+                }
+            }
+            else
+            {
+                foreach (var child in node.Children.Select(n => new { Node = n, Distance = Envelope.Distance(point, n.Envelope) }).OrderBy(x => x.Distance))
+                {
+                    var distance = Envelope.Distance(point, child.Node.Envelope);
+                    if (nearestList.Count < k || distance <= nearestList.Last().Item2)
+                    {
+                        KNearestTraversal(nearestList, k, point, getDistance, child.Node);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
         private static void Collect(Node node, List<Node> result)
         {
             var nodesToSearch = new Stack<Node>();
@@ -258,7 +344,7 @@
 
         public void Clear()
         {
-            _root = new Node
+            _rootNode = new Node
             {
                 IsLeaf = true,
                 Height = 1
@@ -267,10 +353,10 @@
 
         public void Insert(Node item)
         {
-            Insert(item, _root.Height - 1);
+            Insert(item, _rootNode.Height - 1);
         }
 
-        public void Insert(TNode data, Envelope bounds)
+        public void Insert(T data, Envelope bounds)
         {
             Insert(new Node(data, bounds));
         }
@@ -280,7 +366,7 @@
             var envelope = item.Envelope;
             var insertPath = new List<Node>();
 
-            var node = ChooseSubtree(envelope, _root, level, insertPath);
+            var node = ChooseSubtree(envelope, _rootNode, level, insertPath);
 
             node.Children.Add(item);
             node.Envelope.Extend(envelope);
@@ -345,7 +431,6 @@
                         minEnlargement = enlargement;
                         minArea = area < minArea ? area : minArea;
                         targetNode = child;
-
                     }
                     else if (enlargement == minEnlargement)
                     {
@@ -360,6 +445,10 @@
                 }
 
                 node = targetNode;
+                if (node == null)
+                {
+                    throw new InvalidOperationException("Broken R-Tree");
+                }
             }
 
             return node;
@@ -398,13 +487,13 @@
 
         private void SplitRoot(Node node, Node newNode)
         {
-            _root = new Node
+            _rootNode = new Node
             {
                 Children = { node, newNode },
                 Height = node.Height + 1
             };
 
-            RefreshEnvelope(_root);
+            RefreshEnvelope(_rootNode);
         }
 
         private static int ChooseSplitIndex(Node node, int minEntries, int totalCount)
@@ -443,9 +532,9 @@
             return index;
         }
 
-        public void Remove(TNode item, Envelope envelope)
+        public void Remove(T item, Envelope envelope)
         {
-            var node = _root;
+            var node = _rootNode;
             var itemEnvelope = envelope;
 
             var path = new Stack<Node>();
